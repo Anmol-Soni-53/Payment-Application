@@ -20,86 +20,100 @@ const signinBody=z.object({
 })
 
 const updateBody=z.object({
-    password:z.string().optional().min(6),
-    firstName:z.string().optional().max(50),
-    lastName:z.string().optional().max(50),
+    password:z.string().optional(),
+    firstName:z.string().optional(),
+    lastName:z.string().optional(),
 })
 
 const router = express.Router();
 
 router.post("/signup",async function (req,res){
-    const {success}=signupBody.safeParse(req.body)
-
-    if(!success){
-        return res.status(411).json({
-            message:"Email already taken / Incorrect inputs"
+    try {
+        const {success}=signupBody.safeParse(req.body)
+    
+        if(!success){
+            return res.status(411).json({
+                message:"parsing Email already taken / Incorrect inputs"
+            })
+        }
+    
+        const existingUser=await User.findOne({
+            username:req.body.username
         })
-    }
-
-    const existingUser=await User.findOne({
-        username:req.body.username
-    })
-    if(existingUser){
-        return res.status(411).json({
-            message:"Email already taken / Incorrect inputs"
+        if(existingUser){
+            return res.status(411).json({
+                message:"Email this already taken / Incorrect inputs"
+            })
+        }
+    
+        const user= await User.create({
+            username:req.body.username,
+            password:req.body.password,
+            firstName:req.body.firstName,
+            lastName:req.body.lastName
         })
+        min = 1
+        max = 1000000
+        const value=Math.floor(Math.random() * (max - min + 1))+min;
+        console.log(value);
+        await Account.create({
+            userId:user._id,
+            balance:value,
+        })
+    
+        const userId=user._id;
+        const token=jwt.sign({
+            userId
+        },JWT_SECRET);
+    
+        res.json({
+            message:"User created successfully",
+            token:token,
+            value:value,
+        })
+        
+    } catch (error) {
+        console.log("Some Error Occured");
     }
-
-    const user= await User.create({
-        username:req.body.username,
-        password:req.body.password,
-        firstName:req.body.firstName,
-        lastName:req.body.lastName
-    })
-
-    await Account.create({
-        userId:user._id,
-        balance:1+Math.random()*1000
-    })
-
-    const userId=user._id;
-    const token=jwt.sign({
-        userId
-    },JWT_SECRET);
-
-    res.json({
-        message:"User created successfully",
-        token:token
-    })
 });
 
 router.post('/signin',async function(req,res){
-
-    const {success}=signinBody.safeParse(req.body);
-    if(!success){
+    try {
+        const {success}=signinBody.safeParse(req.body);
+        if(!success){
+            return res.status(411).json({
+                message:"Incorrect Inputs"
+            })
+        }
+    
+        const user=await User.findOne({
+            username:req.body.username,
+            password:req.body.password
+        })
+    
+        if(user){
+            const token=jwt.sign({
+                userId:user._id
+            },JWT_SECRET);
+    
+            res.json({
+                token:token
+            })
+            return;
+        }
+    
         return res.status(411).json({
-            message:"Incorrect Inputs"
+            message:"Error while loging in"
         })
+        
+    } catch (error) {
+        console.log("Some Error Occured");   
     }
-
-    const user=await User.findOne({
-        username:req.body.username,
-        password:req.body.password
-    })
-
-    if(user){
-        const token=jwt.sign({
-            userId:user._id
-        },JWT_SECRET);
-
-        res.json({
-            token:token
-        })
-        return;
-    }
-
-    return res.status(411).json({
-        message:"Error while loging in"
-    })
 
 });
 
 router.put('/',authMiddleware,async function(req,res){
+
     const {success}=updateBody.safeParse(req.body);
     if(!success){
         return res.status(411).json({
@@ -129,6 +143,4 @@ router.get('/bulk',authMiddleware,async function(req,res){
         }))
     });
 })
-
-
 module.exports = router;

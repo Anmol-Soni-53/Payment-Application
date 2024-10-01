@@ -1,6 +1,6 @@
-const Button = ({title}) => {
+const Button = ({title,onClick}) => {
     return (
-        <button className="w-full text-white bg-black hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-3 mt-5 "  >{title}</button>
+        <button onClick={onClick}className="w-full text-white bg-black hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-3 mt-5 "  >{title}</button>
     );
 }
  

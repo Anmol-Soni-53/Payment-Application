@@ -6,6 +6,8 @@ const {Account}=require("../db");
 const { JWT_SECRET } = require('../config');
 const authMiddleware=require("../middleware");
 
+const router = express.Router();
+
 router.get('/balance',authMiddleware,async function(req,res){
     const account=await Account.findOne({
         userId:req.userId,
@@ -15,13 +17,17 @@ router.get('/balance',authMiddleware,async function(req,res){
     })
 })
 
-router.get('/transfer',authMiddleware,async function(req,res){
+router.post('/transfer',authMiddleware,async function(req,res){
 
     const session= await mongoose.startSession();
 
     session.startTransaction();
     const {amount,to}=req.body;
-
+    if(amount<0)  {
+        return res.status(400).json({
+            message:"Invalid Amount"
+        });
+    }    
     const account=await Account.findOne({
         userId:req.userId,
     }).session(session);
@@ -54,3 +60,4 @@ router.get('/transfer',authMiddleware,async function(req,res){
     });
 })
 
+module.exports = router;
