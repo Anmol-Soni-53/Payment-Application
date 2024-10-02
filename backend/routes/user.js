@@ -70,12 +70,33 @@ router.post("/signup",async function (req,res){
             message:"User created successfully",
             token:token,
             value:value,
+            _id:user._id
         })
         
     } catch (error) {
         console.log("Some Error Occured");
     }
 });
+
+router.get('/detail', authMiddleware,async function (req,res){
+    try {
+        const user=await User.findById(req.userId);
+        if(user){
+            return res.status(200).json({
+                username:user.username,
+                firstName:user.firstName,
+                lastName:user.lastName 
+            });
+        }
+        return res.status(411).json({
+            message:"No user exist"
+        })
+        
+    } catch (error) {
+        console.log("Could not fetch User");     
+    }
+    
+})
 
 router.post('/signin',async function(req,res){
     try {
@@ -97,7 +118,9 @@ router.post('/signin',async function(req,res){
             },JWT_SECRET);
     
             res.json({
-                token:token
+                token:token,
+                _id:user._id
+
             })
             return;
         }
@@ -130,10 +153,24 @@ router.put('/',authMiddleware,async function(req,res){
 })
 
 router.get('/bulk',authMiddleware,async function(req,res){
-    const filter=req.query.filter || "";
-    const users= await User.find({
-        $or: [{ firstName: { $regex: filter } }, { lastName: { $regex: filter } }],
+    const currentUserId = (req.userId);  
+
+    
+    const filter = req.query.filter || '';  
+    const users = await User.find({
+        $and: [
+            {
+                _id: { $ne: currentUserId }
+            },
+            {
+                $or: [
+                    { firstName: { $regex: filter, $options: 'i' } },  // 'i' for case-insensitive search
+                    { lastName: { $regex: filter, $options: 'i' } }
+                ]
+            }
+        ]
     });
+    
     res.status(200).json({
         user:users.map(user=>({
             username:user.username,

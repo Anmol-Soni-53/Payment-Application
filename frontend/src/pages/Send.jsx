@@ -7,8 +7,10 @@ import User from "../components/User";
 import Warning from "../components/Warning";
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Send = () => {
+    const navigate = useNavigate();
     const token=localStorage.getItem("token");
     const [searchParams]=useSearchParams();
     const id=searchParams.get("id");
@@ -19,7 +21,7 @@ const Send = () => {
             const response = await axios.post(
                 `http://localhost:3000/api/v1/account/transfer`,
                 {
-                    amount, 
+                    amount:amount*100, 
                     to: id,
                 },
                 {
@@ -29,6 +31,7 @@ const Send = () => {
                 }
             );
             console.log(response.data);
+            navigate(`/dashboard`);
         } catch (error) {
             console.error("Error during transfer:", error);
         }

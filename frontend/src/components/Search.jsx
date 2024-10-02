@@ -39,9 +39,9 @@ const Search = ({ token }) => {
 
     const UserComponent = ({ user }) => {
         return (
-            <div className="flex justify-between">
-                <div className="flex">
-                    <div className="rounded-full h-12 w-12 bg-slate-200 flex justify-center mt-1 mr-2">
+            <div className="flex justify-between items-end mt-4">
+                <div className="flex text-center justify-center items-center h-full " >
+                    <div className="rounded-full h-12 w-12 bg-slate-200 flex justify-center mr-2">
                         <div className="flex flex-col justify-center h-full text-xl">
                             {user.firstName[0]}
                         </div>
@@ -52,11 +52,11 @@ const Search = ({ token }) => {
                         </div>
                     </div>
                 </div>
-                <div className="flex flex-col justify-center h-full">
-                    <Button title={"Send Money"} onClick={()=>{
-                        navigate(`/send?id=${user._id}&name=${user.firstName}`);
+                <div>                    
+                        <Button  title={"Send Money"} onClick={()=>{
+                            navigate(`/send?id=${user._id}&name=${user.firstName}`);
 
-                    }} />
+                        }} />
                 </div>
             </div>
         );

@@ -23,7 +23,7 @@ const Signup = () => {
       })
       console.log(response);
       localStorage.setItem("token",response.data.token)
-      navigate("/dashboard");
+      navigate(`/dashboard?id=${response.data._id}`);
     }
     
 
